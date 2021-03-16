@@ -1,0 +1,66 @@
+---
+title: "Developing Data Products - Week 2 assignment"
+author: "Mohammed Asif"
+date: "16/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Assignment Objective
+Create a web page using R Markdown that features a map created with Leaflet. 
+
+Host your webpage on either GitHub Pages, RPubs, or NeoCities.
+
+Your webpage must contain the date that you created the document, and it must contain a map created with Leaflet. We would love to see you show off your creativity! 
+
+
+## Todays Date
+
+```{r}
+Sys.Date()
+```
+
+## Assignment submission Date
+
+```{r}
+as.Date("2021-03-16")
+```
+
+## Map of top 10 deaths in Indian States due to COVID - 30 Jan 2020 to 6 Aug 2020
+Got the data from COVID-19 Corona Virus India Dataset here <https://www.kaggle.com/imdevskp/covid19-corona-virus-india-dataset?select=complete.csv>
+
+### Load libraries
+```{r}
+library(dplyr)
+library(leaflet)
+library(htmltools)
+```
+
+### Get Data
+```{r}
+lin <- 'https://raw.githubusercontent.com/imdevskp/covid-19-india-data/master/complete.csv'
+df <- read.csv(url(lin))
+df$StateUT <- df$Name.of.State...UT
+df$Death <- as.numeric(df$Death)
+sorted <- df %>% group_by(StateUT, Latitude, Longitude) %>% summarise(Death = max(Death), .groups = 'drop')
+arranged <- sorted %>% arrange(desc(Death)) %>% top_n(10)
+```
+
+### Show map
+
+```{r}
+map <- arranged %>%
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers(popup=paste
+             ("<br>State/UT: ", 
+               htmlEscape(arranged$StateUT), 
+              "<br>Deaths: ", 
+               htmlEscape(arranged$Death)
+              ) 
+            )
+map
+```
